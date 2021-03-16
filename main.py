@@ -1,5 +1,7 @@
 import pandas as pandas
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import datetime as dt
 
 
 def ema_denomonator(alpha, n):
@@ -46,23 +48,83 @@ def signal(macd):
     return result
 
 
-def calculate_macd_indicator(data):
-    m = macd(data)
-    s = signal(m)
-    x1 = list(range(1, len(m)+1))
+def buy_crosses(signal, macd, dates):
+    cross = []
+    macd_is_lower = macd[0] < signal[0]
+    for i in range(0, len(macd)):
+        if macd_is_lower:
+            if macd[i] > signal[i]:
+                cross.append(dates[i])
+                macd_is_lower = False
+        else:
+            if macd[i] < signal[i]:
+                macd_is_lower = True
+    return cross
 
-    plt.plot(x1, m, color='red')
+
+def sell_crosses(signal, macd, dates):
+    cross = []
+    macd_is_higher = macd[0] > signal[0]
+    for i in range(0, len(macd)):
+        if macd_is_higher:
+            if macd[i] < signal[i]:
+                cross.append(dates[i])
+                macd_is_higher = False
+        else:
+            if macd[i] > signal[i]:
+                macd_is_higher = True
+    return cross
+
+
+def calculate_macd_indicator(data):
+    m = macd(data.Otwarcie)
+    s = signal(m)
+    days = [dt.datetime.strptime(d, '%Y-%m-%d').date() for d in data.Data]
+    buy_cross = buy_crosses(s, m[26:], days[52:])
+    sell_cross = sell_crosses(s, m[26:], days[52:])
+
+    plot_for_macd(days[52:], m[26:], s, buy_cross, sell_cross)
+    plot_for_price(data, days, buy_cross, sell_cross)
+    return []
+
+
+def plot_for_price(data, days, buy_cross, sell_cross):
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=360))
+    plt.plot(days, data.Otwarcie, color='red', label='price', linewidth=1)
+    for xc in buy_cross:
+        plt.axvline(x=xc, color='green', linewidth='1')
+    for xc in sell_cross:
+        plt.axvline(x=xc, color='red', linewidth='1')
+    plt.title('Wig20 price', fontsize=14)
+    plt.xlabel('dni', fontsize=14)
+    plt.ylabel('cena', fontsize=14)
+    plt.grid(True)
+    plt.legend(loc='lower left');
+    plt.savefig('result/price_chart.png', dpi=1440)
+    plt.show()
+
+
+def plot_for_macd(days, m, s, buy_cross, sell_cross):
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=360))
+    plt.plot(days, m, color='red', label='macd', linewidth=1)
+    plt.plot(days, s, color='blue', label='signal', linewidth=1)
+    for xc in buy_cross:
+        plt.axvline(x=xc, color='green', linewidth='1')
+    for xc in sell_cross:
+        plt.axvline(x=xc, color='red', linewidth='1')
     plt.title('Standard macd for Wig20', fontsize=14)
     plt.xlabel('dni', fontsize=14)
     plt.ylabel('macd', fontsize=14)
     plt.grid(True)
-    plt.savefig('result/chart.png', dpi=300)
+    plt.legend(loc='lower left');
+    plt.savefig('result/macd_chart.png', dpi=1440)
     plt.show()
-    return []
 
 
 file = pandas.read_csv("data/wig20.csv")
-res = calculate_macd_indicator(file.Otwarcie)
+res = calculate_macd_indicator(file)
 print(res)
-#TODO testy jednostkowe na funkcje macd() i signal
-#TODO wlasny wskaznik
+# TODO testy jednostkowe na funkcje macd() i signal
+# TODO wlasny wskaznik
