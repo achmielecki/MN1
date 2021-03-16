@@ -76,16 +76,35 @@ def sell_crosses(signal, macd, dates):
     return cross
 
 
+def play(start_capital, buy_cross, sell_cross, days, prices):
+    capital = start_capital
+    stocks = 0
+    for i, day in enumerate(days):
+        if day in buy_cross:
+            stocks += capital/prices[i]
+            capital = 0
+            print("bought ", stocks, " stocks for", stocks*prices[i], " on day", day)
+        if day in sell_cross:
+            capital += prices[i]*stocks
+            stocks = 0
+            print("sold ", capital/prices[i], " stocks for", capital, " on day", day)
+    capital += stocks * prices[-1]
+    return capital
+
+
 def calculate_macd_indicator(data):
+    offset1 = 52
+    offset2 = 26
     m = macd(data.Otwarcie)
     s = signal(m)
     days = [dt.datetime.strptime(d, '%Y-%m-%d').date() for d in data.Data]
-    buy_cross = buy_crosses(s, m[26:], days[52:])
-    sell_cross = sell_crosses(s, m[26:], days[52:])
+    buy_cross = buy_crosses(s, m[offset2:], days[offset1:])
+    sell_cross = sell_crosses(s, m[offset2:], days[offset1:])
+    earnings = play(1000, buy_cross, sell_cross, days[offset1:], data.Otwarcie[offset1:].tolist())
 
-    plot_for_macd(days[52:], m[26:], s, buy_cross, sell_cross)
+    plot_for_macd(days[offset1:], m[offset2:], s, buy_cross, sell_cross)
     plot_for_price(data, days, buy_cross, sell_cross)
-    return []
+    return earnings
 
 
 def plot_for_price(data, days, buy_cross, sell_cross):
@@ -100,7 +119,7 @@ def plot_for_price(data, days, buy_cross, sell_cross):
     plt.xlabel('dni', fontsize=14)
     plt.ylabel('cena', fontsize=14)
     plt.grid(True)
-    plt.legend(loc='lower left');
+    plt.legend(loc='lower left')
     plt.savefig('result/price_chart.png', dpi=1440)
     plt.show()
 
