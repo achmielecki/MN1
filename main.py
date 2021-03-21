@@ -62,6 +62,10 @@ def buy_crosses(signal, macd, dates):
     return cross
 
 
+def dupa():
+    return None
+
+
 def sell_crosses(signal, macd, dates):
     cross = []
     macd_is_higher = macd[0] > signal[0]
