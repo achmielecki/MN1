@@ -153,7 +153,7 @@ def plot_for_macd(days, m, s, buy_cross, sell_cross):
     plt.ylabel('macd', fontsize=14)
     plt.grid(True)
     plt.legend(loc='lower left');
-    plt.savefig('result/macd_chart.png', dpi=1440)
+    plt.savefig('result/macd_chart_with_lines.png', dpi=1440)
     plt.show()
 
 
