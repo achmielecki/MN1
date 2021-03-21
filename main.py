@@ -62,7 +62,7 @@ def buy_crosses(signal, macd, dates):
     return cross
 
 
-def dupa():
+def pupa():
     return None
 
 
