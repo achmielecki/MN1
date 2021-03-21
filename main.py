@@ -103,11 +103,13 @@ def calculate_macd_indicator(data):
     earnings = play(1000, buy_cross, sell_cross, days[offset1:], data.Otwarcie[offset1:].tolist())
 
     plot_for_macd(days[offset1:], m[offset2:], s, buy_cross, sell_cross)
-    plot_for_price(data, days, buy_cross, sell_cross)
+    plot_for_macd_without_lines(days[offset1:], m[offset2:], s)
+    plot_for_price(data, days)
+    plot_for_price_with_lines(data, days, buy_cross, sell_cross)
     return earnings
 
 
-def plot_for_price(data, days, buy_cross, sell_cross):
+def plot_for_price_with_lines(data, days, buy_cross, sell_cross):
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=360))
     plt.plot(days, data.Otwarcie, color='red', label='price', linewidth=1)
@@ -115,6 +117,19 @@ def plot_for_price(data, days, buy_cross, sell_cross):
         plt.axvline(x=xc, color='green', linewidth='1')
     for xc in sell_cross:
         plt.axvline(x=xc, color='red', linewidth='1')
+    plt.title('Wig20 price', fontsize=14)
+    plt.xlabel('dni', fontsize=14)
+    plt.ylabel('cena', fontsize=14)
+    plt.grid(True)
+    plt.legend(loc='lower left')
+    plt.savefig('result/price_chart_with_lines.png', dpi=1440)
+    plt.show()
+
+
+def plot_for_price(data, days):
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=360))
+    plt.plot(days, data.Otwarcie, color='red', label='price', linewidth=1)
     plt.title('Wig20 price', fontsize=14)
     plt.xlabel('dni', fontsize=14)
     plt.ylabel('cena', fontsize=14)
@@ -142,8 +157,20 @@ def plot_for_macd(days, m, s, buy_cross, sell_cross):
     plt.show()
 
 
+def plot_for_macd_without_lines(days, m, s):
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=360))
+    plt.plot(days, m, color='red', label='macd', linewidth=1)
+    plt.plot(days, s, color='blue', label='signal', linewidth=1)
+    plt.title('Standard macd for Wig20', fontsize=14)
+    plt.xlabel('dni', fontsize=14)
+    plt.ylabel('macd', fontsize=14)
+    plt.grid(True)
+    plt.legend(loc='lower left');
+    plt.savefig('result/macd_chart.png', dpi=1440)
+    plt.show()
+
+
 file = pandas.read_csv("data/wig20.csv")
 res = calculate_macd_indicator(file)
 print(res)
-# TODO testy jednostkowe na funkcje macd() i signal
-# TODO wlasny wskaznik
